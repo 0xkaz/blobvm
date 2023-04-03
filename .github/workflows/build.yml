@@ -1,0 +1,119 @@
+name: docker build 
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v3
+
+      - name: set up go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - name: display go version
+        run: go version
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: docker build
+        run: make dockerbuild
+
+      #- name: go fmt
+      #  run: ./gofmt-w.sh
+      #  working-directory: ./containers/blobvm
+
+      #- name: go vet
+      #  run: ./govet.sh
+      #  working-directory: ./containers/blobvm
+
+      #- uses: dominikh/staticcheck-action@v1.3.0
+      #
+      #  with:
+      #    install-go: false
+      #    working-directory: ./containers/blobvm
+
+      #- name: go build
+      #  run: go build -v ./...
+      #  working-directory: ./containers/blobvm
+
+      #- name: go test
+      #  run: go test -v ./...
+      #  working-directory: ./containers/blobvm
+
+      # - name: Set up QEMU
+      #   uses: docker/setup-qemu-action@v2
+
+      # - name: GITHUB_REF
+      #   run: echo ${GITHUB_REF##*/}
+
+      # - name: build 
+      #   run: ./scripts/build.sh
+        
+      # - name: docker build
+      #   # run: docker build . -t blobvm
+      #   # run: docker build  --platform linux/amd64  -t blobvm .
+      #   #   run: docker build  -t blobvm .
+      #   run: docker build --build-arg AVALANCHE_VERSION=v1.9.11 -t blobvm:latest .  
+      #   #  run: docker build -t blobvm:latest . 
+      #     #working-directory: ./containers/blobvm
+
+      #   #- name: docker run & sleep 5
+      #   #  run: docker run -dp 3000:3000 -t blobvm ; sleep 20
+
+      # - name: GITHUB_REF
+      #   run: echo ${GITHUB_REF##*/}
+
+      # - name: docker tag1
+      #   run: docker tag blobvm:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/blobvm:latest
+
+
+      # # AWS Credentials
+      # - name: create .aws
+      #   run: mkdir ~/.aws
+      # - name: echo1
+      #   run: echo '[default]' > ~/.aws/credentials
+      # - name: echo2
+      #   run: echo "aws_access_key_id = ${{ secrets.AWS_ACCESS_KEY_ID }}" >> ~/.aws/credentials
+      # - name: echo3
+      #   run: echo "aws_secret_access_key = ${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> ~/.aws/credentials
+
+      # - name: echo4
+      #   run: echo '[default]' > ~/.aws/config
+      # - name: echo5
+      #   run: echo "region = ${{ secrets.AWS_REGION }}" >> ~/.aws/config
+
+      # # DOCKER PUSH
+      # - name: docker login
+      #   run: aws ecr get-login-password --region ${{ secrets.AWS_REGION }} |  docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION}}.amazonaws.com
+      # - name: docker push
+      #   run: docker push  --all-tags ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/blobvm
+
+      # # - name: delete old docker image
+      # #   run: ./scripts/delete_old_docker_images.rb blobvm eu-west-1
+      # #   working-directory: ./containers/blobvm
+
+      - name: Send custom JSON data to Slack workflow
+        id: slack
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          # For posting a rich message using Block Kit
+          payload: |
+            {
+              "text": "GitHub Action blobvm Docker Build/Push result: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}\nDocker Repository URL: blobvm \nhttps://${{ secrets.AWS_REGION }}.console.aws.amazon.com/ecr/repositories/private/${{ secrets.AWS_ACCOUNT_ID }}/blobvm?region=${{ secrets.AWS_REGION }}\n",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "GitHub Action blobvm Docker Build/Push result: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}\nDocker Repository URL: blobvm \nhttps://${{ secrets.AWS_REGION }}.console.aws.amazon.com/ecr/repositories/private/${{ secrets.AWS_ACCOUNT_ID }}/blobvm?region=${{ secrets.AWS_REGION }}\n"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
