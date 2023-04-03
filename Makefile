@@ -4,9 +4,10 @@ buildsh:
 	rm -rf ./build/*
 	./scripts/build.sh
 run: 
-	./scripts/run.sh 1.9.7
+	# ./scripts/run.sh 1.9.7
+	./scripts/run2.sh 1.9.7
 kill:
-	ps awxww | grep avalanche | awk '{print $$1}' | xargs  kill -9
+	ps awxww | grep avalanche | awk '{print $$1}' | xargs  kill -9 &>2
 ps:
 	ps awxww | grep avalanche 
 
