@@ -79,13 +79,21 @@ AVALANCHEGO_PLUGIN_DIR=/tmp/avalanchego-v${VERSION}/plugins
 
 ############################
 echo "building blobvm"
-go build \
--o /tmp/avalanchego-v${VERSION}/plugins/kM6h4LYe3AcEU1MB2UNg6ubzAiDAALZzpVrbX8zn3hXF6Avd8 \
-./cmd/blobvm
-find /tmp/avalanchego-v${VERSION}
+AVALANCHEGO_BIN=/tmp/avalanchego-v${VERSION}/avalanchego
+if [ ! -f "$AVALANCHEGO_BIN" ]; then
 
-echo "building blob-cli"
-go build -v -o /tmp/blob-cli ./cmd/blob-cli
+  go build \
+  -o /tmp/avalanchego-v${VERSION}/plugins/kM6h4LYe3AcEU1MB2UNg6ubzAiDAALZzpVrbX8zn3hXF6Avd8 \
+  ./cmd/blobvm
+  
+fi 
+find /tmp/avalanchego-v${VERSION}
+if [ ! -f "/tmp/blob-cli"]; then 
+  echo "building blob-cli"
+  go build -v -o /tmp/blob-cli ./cmd/blob-cli
+fi
+find /tmp/blob-cli
+
 ############################
 
 ############################
