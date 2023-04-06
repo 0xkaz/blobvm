@@ -34,8 +34,9 @@ import (
 )
 
 const (
-	Name           = "blobvm"
-	PublicEndpoint = "/public"
+	Name            = "blobvm"
+	PublicEndpoint  = "/public"
+	WeaveDBEndpoint = "/weavedb"
 )
 
 var (
@@ -49,6 +50,9 @@ type VM struct {
 	config      Config
 	genesis     *chain.Genesis
 	AirdropData []byte
+
+	// State of WeaveDB VM
+	// weavedbState WeaveDBState
 
 	bootstrapped utils.AtomicBool
 
@@ -266,35 +270,58 @@ func newHandler(name string, service interface{}, lockOption ...common.LockOptio
 // implements "snowmanblock.ChainVM.common.VM"
 // for "ext/vm/[chainID]"
 func (vm *VM) CreateHandlers(ctx context.Context) (map[string]*common.HTTPHandler, error) {
-	publicServer := rpc.NewServer()
-	publicServer.RegisterCodec(json.NewCodec(), "application/json")
-	publicServer.RegisterCodec(json.NewCodec(), "application/json;charset=UTF-8")
-
-	generalServer := rpc.NewServer()
-	generalServer.RegisterCodec(json.NewCodec(), "application/json")
-	generalServer.RegisterCodec(json.NewCodec(), "application/json;charset=UTF-8")
-
-	// apis := map[string]*common.HTTPHandler{}
-
-	// publicServcie, err := newHandler(Name, &PublicService{vm: vm})
-	// if err != nil {
+	// publicServer := rpc.NewServer()
+	// publicServer.RegisterCodec(json.NewCodec(), "application/json")
+	// publicServer.RegisterCodec(json.NewCodec(), "application/json;charset=UTF-8")
+	// if err := publicServer.RegisterService(&PublicService{}, Name); err != nil {
+	// 	return nil, err
+	// }
+	// generalServer := rpc.NewServer()
+	// generalServer.RegisterCodec(json.NewCodec(), "application/json")
+	// generalServer.RegisterCodec(json.NewCodec(), "application/json;charset=UTF-8")
+	// if err := generalServer.RegisterService(&GeneralService{}, Name); err != nil {
+	// 	return nil, err
+	// }
+	// weavedbServer := rpc.NewServer()
+	// weavedbServer.RegisterCodec(json.NewCodec(), "application/json")
+	// weavedbServer.RegisterCodec(json.NewCodec(), "application/json;charset=UTF-8")
+	// if err := generalServer.RegisterService(&WeaveDBService{}, Name); err != nil {
 	// 	return nil, err
 	// }
 
-	// apis[PublicEndpoint] = publicServcie
-	// apis[""] = generalService
-	// return apis, nil
+	publicServcie, err := newHandler(Name, &PublicService{vm: vm})
+	if err != nil {
+		return nil, err
+	}
+	generalServcie, err := newHandler(Name, &GeneralService{vm: vm})
+	if err != nil {
+		return nil, err
+	}
+	weavedbService, err := newHandler(Name, &WeaveDBService{vm: vm})
+	if err != nil {
+		return nil, err
+	}
 
-	return map[string]*common.HTTPHandler{
-		"/public": {
-			LockOptions: common.NoLock,
-			Handler:     publicServer,
-		},
-		"": {
-			LockOptions: common.NoLock,
-			Handler:     generalServer,
-		},
-	}, nil
+	apis := map[string]*common.HTTPHandler{}
+	apis[PublicEndpoint] = publicServcie
+	apis[WeaveDBEndpoint] = weavedbService
+	apis[""] = generalServcie
+	return apis, nil
+
+	// return map[string]*common.HTTPHandler{
+	// 	PublicEndpoint: {
+	// 		LockOptions: common.NoLock,
+	// 		Handler:     publicServer,
+	// 	},
+	// 	"": {
+	// 		LockOptions: common.NoLock,
+	// 		Handler:     generalServer,
+	// 	},
+	// 	WeaveDBEndpoint: {
+	// 		LockOptions: common.NoLock,
+	// 		Handler:     weavedbServer,
+	// 	},
+	// }, nil
 }
 
 // implements "snowmanblock.ChainVM.common.VM"
@@ -355,17 +382,20 @@ func (vm *VM) CrossChainAppResponse(ctx context.Context, chainID ids.ID, request
 
 // implements "snowmanblock.ChainVM.commom.VM.health.Checkable"
 func (vm *VM) HealthCheck(ctx context.Context) (interface{}, error) {
+	// log2.Printf("HealthCheck")
 	return http.StatusOK, nil
 }
 
 // implements "snowmanblock.ChainVM.commom.VM.validators.Connector"
 func (vm *VM) Connected(ctx context.Context, id ids.NodeID, nodeVersion *avagoversion.Application) error {
+	log2.Printf("Connected")
 	// no-op
 	return nil
 }
 
 // implements "snowmanblock.ChainVM.commom.VM.validators.Connector"
 func (vm *VM) Disconnected(ctx context.Context, id ids.NodeID) error {
+	log2.Printf("Disconnected")
 	// no-op
 	return nil
 }
@@ -373,6 +403,7 @@ func (vm *VM) Disconnected(ctx context.Context, id ids.NodeID) error {
 // implements "snowmanblock.ChainVM.commom.VM.Getter"
 // replaces "core.SnowmanVM.GetBlock"
 func (vm *VM) GetBlock(ctx context.Context, id ids.ID) (snowman.Block, error) {
+	log2.Printf("VM.GetBlock")
 	b, err := vm.GetStatelessBlock(id)
 	if err != nil {
 		log.Warn("failed to get block", "err", err)
@@ -381,6 +412,7 @@ func (vm *VM) GetBlock(ctx context.Context, id ids.ID) (snowman.Block, error) {
 }
 
 func (vm *VM) GetStatelessBlock(blkID ids.ID) (*chain.StatelessBlock, error) {
+	log2.Printf("VM.GetStatelessBlock")
 	// has the block been cached from previous "Accepted" call
 	bi, exist := vm.blocks.Get(blkID)
 	if exist {
@@ -408,6 +440,7 @@ func (vm *VM) GetStatelessBlock(blkID ids.ID) (*chain.StatelessBlock, error) {
 // implements "snowmanblock.ChainVM.commom.VM.Parser"
 // replaces "core.SnowmanVM.ParseBlock"
 func (vm *VM) ParseBlock(ctx context.Context, source []byte) (snowman.Block, error) {
+	log2.Printf("VM.ParseBlock")
 	newBlk, err := chain.ParseBlock(
 		source,
 		choices.Processing,
