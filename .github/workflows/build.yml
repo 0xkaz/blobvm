@@ -24,7 +24,8 @@ jobs:
         run: make 
 
       - name: docker build
-        run: make docker
+        # run: make docker
+        run: docker bulid -t blobvm .
 
       #- name: go fmt
       #  run: ./gofmt-w.sh

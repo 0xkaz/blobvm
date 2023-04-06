@@ -7,6 +7,7 @@ buildsh: kill
 run: kill
 	# ./scripts/run.sh 1.7.13
 	./scripts/run.sh 1.9.3
+	# ./scripts/run.sh 1.9.10
 	
 	# ./scripts/run2.sh 1.7.13
 kill:

@@ -8,6 +8,7 @@ import (
 	"context"
 	ejson "encoding/json"
 	"fmt"
+	log2 "log"
 	"net/http"
 	"time"
 
@@ -266,18 +267,37 @@ func newHandler(name string, service interface{}, lockOption ...common.LockOptio
 // for "ext/vm/[chainID]"
 func (vm *VM) CreateHandlers(ctx context.Context) (map[string]*common.HTTPHandler, error) {
 	apis := map[string]*common.HTTPHandler{}
-	public, err := newHandler(Name, &PublicService{vm: vm})
+	publicServcie, err := newHandler(Name, &PublicService{vm: vm})
 	if err != nil {
 		return nil, err
 	}
-	apis[PublicEndpoint] = public
+	generalService, err := newHandler(Name, &GeneralService{vm: vm})
+	if err != nil {
+		return nil, err
+	}
+	apis[PublicEndpoint] = publicServcie
+	apis[""] = generalService
 	return apis, nil
 }
 
 // implements "snowmanblock.ChainVM.common.VM"
 // for "ext/vm/[vmID]"
 func (vm *VM) CreateStaticHandlers(ctx context.Context) (map[string]*common.HTTPHandler, error) {
-	return nil, nil
+	log2.Printf("CreateStaticHandlers")
+	server := rpc.NewServer()
+	server.RegisterCodec(json.NewCodec(), "application/json")
+	server.RegisterCodec(json.NewCodec(), "application/json;charset=UTF-8")
+	if err := server.RegisterService(&StaticService{}, Name); err != nil {
+		return nil, err
+	}
+
+	return map[string]*common.HTTPHandler{
+		"": {
+			LockOptions: common.NoLock,
+			Handler:     server,
+		},
+	}, nil
+	// return nil, nil
 }
 
 // implements "snowmanblock.ChainVM.commom.VM.AppHandler"
