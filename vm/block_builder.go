@@ -7,6 +7,8 @@ import (
 	"sync"
 	"time"
 
+	log2 "log"
+
 	"github.com/ava-labs/avalanchego/snow/engine/common"
 	"github.com/ava-labs/blobvm/utils/timer"
 	log "github.com/inconshreveable/log15"
@@ -26,6 +28,8 @@ var (
 // [SetBlockBuilder] changes the [BlockBuilder] during runtime by stopping the
 // previous block builder and then starting a new one.
 func (vm *VM) SetBlockBuilder(b func() BlockBuilder) {
+	log2.Printf("SetBlockBuilder")
+
 	// Wait for previous builder to stop
 	close(vm.builderStop)
 	<-vm.doneBuild
@@ -77,6 +81,7 @@ type TimeBuilder struct {
 }
 
 func (vm *VM) NewTimeBuilder() *TimeBuilder {
+	log2.Printf("NewTimeBuilder")
 	b := &TimeBuilder{
 		vm:          vm,
 		status:      dontBuild,
@@ -94,6 +99,7 @@ func (vm *VM) NewTimeBuilder() *TimeBuilder {
 // other than [dontBuild], then the attempt has already begun and this notification
 // can be safely skipped.
 func (b *TimeBuilder) signalTxsReady() {
+	log2.Printf("TimeBuilder.signalTxsReady")
 	b.l.Lock()
 	defer b.l.Unlock()
 
@@ -107,6 +113,7 @@ func (b *TimeBuilder) signalTxsReady() {
 // signal the avalanchego engine
 // to build a block from pending transactions
 func (b *TimeBuilder) markBuilding() {
+	log2.Printf("TimeBuilder.markBuilding")
 	select {
 	case b.vm.toEngine <- common.PendingTxs:
 		b.status = building
@@ -119,6 +126,7 @@ func (b *TimeBuilder) markBuilding() {
 // [HandleGenerateBlock] invocation could lead to quiesence, building a block with
 // some delay, or attempting to build another block immediately.
 func (b *TimeBuilder) HandleGenerateBlock() {
+	log2.Printf("TimeBuilder.HandleGenerateBlock")
 	b.l.Lock()
 	defer b.l.Unlock()
 
@@ -135,6 +143,7 @@ func (b *TimeBuilder) HandleGenerateBlock() {
 // needToBuild returns true if there are outstanding transactions to be issued
 // into a block.
 func (b *TimeBuilder) needToBuild() bool {
+	log2.Printf("TimeBuilder.needToBuild")
 	return b.vm.mempool.Len() > 0
 }
 
@@ -143,6 +152,7 @@ func (b *TimeBuilder) needToBuild() bool {
 // If it should be called back again, it returns the timeout duration at
 // which it should be called again.
 func (b *TimeBuilder) buildBlockTwoStageTimer() (time.Duration, bool) {
+	log2.Printf("TimeBuilder.buildBlockTwoStageTimer")
 	b.l.Lock()
 	defer b.l.Unlock()
 
@@ -164,6 +174,7 @@ func (b *TimeBuilder) buildBlockTwoStageTimer() (time.Duration, bool) {
 }
 
 func (b *TimeBuilder) Build() {
+	log2.Printf("TimeBuilder.Build")
 	log.Debug("starting build loops")
 	defer close(b.doneBuild)
 
@@ -181,6 +192,7 @@ func (b *TimeBuilder) Build() {
 
 // periodically but less aggressively force-regossip the pending
 func (b *TimeBuilder) Gossip() {
+	log2.Printf("TimeBuilder.Gossip")
 	log.Debug("starting gossip loops")
 	defer close(b.doneGossip)
 
@@ -212,6 +224,7 @@ type ManualBuilder struct {
 }
 
 func (vm *VM) NewManualBuilder() *ManualBuilder {
+	log2.Printf("VM.NewManualBuilder")
 	return &ManualBuilder{
 		vm:         vm,
 		doneBuild:  vm.doneBuild,
@@ -220,14 +233,20 @@ func (vm *VM) NewManualBuilder() *ManualBuilder {
 }
 
 func (b *ManualBuilder) Build() {
+	log2.Printf("ManualBuilder.Build")
 	close(b.doneBuild)
 }
 
 func (b *ManualBuilder) Gossip() {
+	log2.Printf("ManualBuilder.Gossip")
 	close(b.doneGossip)
 }
-func (b *ManualBuilder) HandleGenerateBlock() {}
+func (b *ManualBuilder) HandleGenerateBlock() {
+	log2.Printf("ManualBuilder.HandleGenerateBlock")
+
+}
 func (b *ManualBuilder) NotifyBuild() {
+	log2.Printf("ManualBuilder.NotifyBuild")
 	select {
 	case b.vm.toEngine <- common.PendingTxs:
 	default:
