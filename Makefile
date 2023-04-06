@@ -3,7 +3,7 @@ _NAME := blobvm
 buildsh: kill
 	# rm -rf ./build/*
 	./scripts/build.sh
-	./scripts/run2-pre.sh 1.9.7
+	# ./scripts/run2-pre.sh 1.9.7
 run: kill
 	# ./scripts/run.sh 1.9.7
 	./scripts/run.sh 1.9.7
