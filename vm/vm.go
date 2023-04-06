@@ -266,18 +266,35 @@ func newHandler(name string, service interface{}, lockOption ...common.LockOptio
 // implements "snowmanblock.ChainVM.common.VM"
 // for "ext/vm/[chainID]"
 func (vm *VM) CreateHandlers(ctx context.Context) (map[string]*common.HTTPHandler, error) {
-	apis := map[string]*common.HTTPHandler{}
-	publicServcie, err := newHandler(Name, &PublicService{vm: vm})
-	if err != nil {
-		return nil, err
-	}
-	generalService, err := newHandler(Name, &GeneralService{vm: vm})
-	if err != nil {
-		return nil, err
-	}
-	apis[PublicEndpoint] = publicServcie
-	apis[""] = generalService
-	return apis, nil
+	publicServer := rpc.NewServer()
+	publicServer.RegisterCodec(json.NewCodec(), "application/json")
+	publicServer.RegisterCodec(json.NewCodec(), "application/json;charset=UTF-8")
+
+	generalServer := rpc.NewServer()
+	generalServer.RegisterCodec(json.NewCodec(), "application/json")
+	generalServer.RegisterCodec(json.NewCodec(), "application/json;charset=UTF-8")
+
+	// apis := map[string]*common.HTTPHandler{}
+
+	// publicServcie, err := newHandler(Name, &PublicService{vm: vm})
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// apis[PublicEndpoint] = publicServcie
+	// apis[""] = generalService
+	// return apis, nil
+
+	return map[string]*common.HTTPHandler{
+		"/public": {
+			LockOptions: common.NoLock,
+			Handler:     publicServer,
+		},
+		"": {
+			LockOptions: common.NoLock,
+			Handler:     generalServer,
+		},
+	}, nil
 }
 
 // implements "snowmanblock.ChainVM.common.VM"
