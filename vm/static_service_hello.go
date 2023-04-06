@@ -14,7 +14,7 @@ func init() {
 	log2.SetFlags(log2.Ldate | log2.Lshortfile)
 }
 
-// EncodeArgs are arguments for Hello
+// HelloArgs are arguments for Hello
 type HelloArgs struct {
 	Name string `json:"name"`
 }
