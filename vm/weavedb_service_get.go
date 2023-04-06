@@ -10,14 +10,14 @@ import (
 	log "github.com/inconshreveable/log15"
 )
 
-// WeaveDBServiceSet are arguments for Get
+// WeaveDBServiceGetAargs are arguments for Get
 type WeaveDBServiceGetAargs struct {
 	ContractTxId   string `json:"contract_tx_id"`
 	CollectionPath string `json:"collection_path"`
 	Value          string `json:"value"`
 }
 
-// WeaveDBServiceReply is the reply from Get
+// WeaveDBServiceGetReply is the reply from Get
 type WeaveDBServiceGetReply struct {
 	Success bool `serialize:"true" json:"success"`
 }

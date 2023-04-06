@@ -7,6 +7,8 @@ import (
 	log2 "log"
 	"net/http"
 
+	"github.com/ava-labs/avalanchego/utils/formatting"
+
 	log "github.com/inconshreveable/log15"
 )
 
@@ -24,8 +26,18 @@ type WeaveDBServiceReply struct {
 
 func (svc *WeaveDBService) Set(_ *http.Request, args *WeaveDBServiceSetArgs, reply *GeneralPingReply) (err error) {
 	log2.Printf("WeaveDBService.Set: txid=%s, path=%s, val=%s", args.ContractTxId, args.CollectionPath, args.Value)
+	// id, err := svc.vm.state.GetLastAccepted()
 
 	log.Info("WeaveDBService.Set")
+	bytes, err := formatting.Decode(formatting.Hex, args.Value)
+	if err != nil || len(bytes) != QueueDataLen {
+		// return errBadData
+		// return errors.New("WeaveDBService.Set: err=%v", err.Error())
+		return err
+
+	}
+	reply.Success = svc.vm.addWeaveDBQueue(BytesToData(bytes))
+
 	reply.Success = true
 	return nil
 }

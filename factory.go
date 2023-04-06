@@ -4,6 +4,8 @@
 package vm
 
 import (
+	log2 "log"
+
 	"github.com/ava-labs/avalanchego/snow"
 	"github.com/ava-labs/avalanchego/vms"
 	"github.com/ava-labs/blobvm/vm"
@@ -13,4 +15,7 @@ var _ vms.Factory = &Factory{}
 
 type Factory struct{}
 
-func (f *Factory) New(*snow.Context) (interface{}, error) { return &vm.VM{}, nil }
+func (f *Factory) New(*snow.Context) (interface{}, error) {
+	log2.Printf("Factory.New")
+	return &vm.VM{}, nil
+}

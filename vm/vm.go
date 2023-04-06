@@ -37,6 +37,8 @@ const (
 	Name            = "blobvm"
 	PublicEndpoint  = "/public"
 	WeaveDBEndpoint = "/weavedb"
+	QueueDataLen    = 1024
+	MaxMempoolSize  = 4096
 )
 
 var (
@@ -51,12 +53,14 @@ type VM struct {
 	genesis     *chain.Genesis
 	AirdropData []byte
 
-	// State of WeaveDB VM
-	// weavedbState WeaveDBState
+	// // State of WeaveDB VM
+	// state WeaveDBState
 
 	bootstrapped utils.AtomicBool
 
-	mempool   *mempool.Mempool
+	mempool  *mempool.Mempool
+	mempool2 [][QueueDataLen]byte
+
 	appSender common.AppSender
 	network   *PushNetwork
 
@@ -340,6 +344,10 @@ func (vm *VM) CreateStaticHandlers(ctx context.Context) (map[string]*common.HTTP
 			LockOptions: common.NoLock,
 			Handler:     server,
 		},
+		"public": {
+			LockOptions: common.NoLock,
+			Handler:     server,
+		},
 	}, nil
 	// return nil, nil
 }
@@ -402,6 +410,7 @@ func (vm *VM) Disconnected(ctx context.Context, id ids.NodeID) error {
 
 // implements "snowmanblock.ChainVM.commom.VM.Getter"
 // replaces "core.SnowmanVM.GetBlock"
+
 func (vm *VM) GetBlock(ctx context.Context, id ids.ID) (snowman.Block, error) {
 	log2.Printf("VM.GetBlock")
 	b, err := vm.GetStatelessBlock(id)
@@ -410,6 +419,22 @@ func (vm *VM) GetBlock(ctx context.Context, id ids.ID) (snowman.Block, error) {
 	}
 	return b, err
 }
+
+// // GetBlock implements the snowman.ChainVM interface
+// func (vm *VM) GetBlock(ctx context.Context, blkID ids.ID) (snowman.Block, error) {
+// 	log2.Printf("GetBlock")
+// 	return vm.getBlock(blkID)
+// }
+
+// func (vm *VM) getBlock(blkID ids.ID) (*Block, error) {
+// 	log2.Printf("getBlock")
+// 	// If block is in memory, return it.
+// 	if blk, exists := vm.verifiedBlocks[blkID]; exists {
+// 		return blk, nil
+// 	}
+// 	// return vm.state.GetBlock(blkID)
+// 	return vm.state.GetBlock(blkID)
+// }
 
 func (vm *VM) GetStatelessBlock(blkID ids.ID) (*chain.StatelessBlock, error) {
 	log2.Printf("VM.GetStatelessBlock")
@@ -534,4 +559,27 @@ func (vm *VM) SetPreference(ctx context.Context, id ids.ID) error {
 // replaces "core.SnowmanVM.LastAccepted"
 func (vm *VM) LastAccepted(ctx context.Context) (ids.ID, error) {
 	return vm.lastAccepted.ID(), nil
+}
+
+// addWeaveDBQueue ...
+func (vm *VM) addWeaveDBQueue(data [QueueDataLen]byte) bool {
+	log2.Printf("addWeaveDBQueue")
+	if len(vm.mempool2) > MaxMempoolSize {
+		return false
+	}
+	vm.mempool2 = append(vm.mempool2, data)
+	vm.NotifyBlockReady()
+	return true
+}
+
+// NotifyBlockReady tells the consensus engine that a new block
+// is ready to be created
+func (vm *VM) NotifyBlockReady() {
+	log2.Printf("NotifyBlockReady")
+
+	select {
+	case vm.toEngine <- common.PendingTxs:
+	default:
+		vm.snowCtx.Log.Debug("dropping message to consensus engine")
+	}
 }
