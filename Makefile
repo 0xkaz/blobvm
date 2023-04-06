@@ -3,11 +3,11 @@ _NAME := blobvm
 buildsh: kill
 	# rm -rf ./build/*
 	./scripts/build.sh
-	# ./scripts/run2-pre.sh 1.9.7
+	# ./scripts/run2-pre.sh1.7.13
 run: kill
-	# ./scripts/run.sh 1.9.7
-	./scripts/run.sh 1.9.7
-	# ./scripts/run2.sh 1.9.7
+	# ./scripts/run.sh 1.7.13
+	./scripts/run.sh 1.7.13
+	# ./scripts/run2.sh 1.7.13
 kill:
 	# ps awxww | grep avalanche | awk '{print $$1}' | xargs  kill -9 
 	ps awxww | grep avalanche | grep -v grep | awk '{print $$1}'|xargs  kill -9 
