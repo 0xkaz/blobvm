@@ -6,7 +6,8 @@ buildsh: kill
 	# ./scripts/run2-pre.sh1.7.13
 run: kill
 	# ./scripts/run.sh 1.7.13
-	./scripts/run.sh 1.7.13
+	./scripts/run.sh 1.9.3
+	
 	# ./scripts/run2.sh 1.7.13
 kill:
 	# ps awxww | grep avalanche | awk '{print $$1}' | xargs  kill -9 
@@ -14,7 +15,7 @@ kill:
 ps:
 	ps awxww | grep avalanche 
 
-dockerbuild: 
+docker: 
 	docker build   -t $(_NAME) . 
 
 dockerrun: 
