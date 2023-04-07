@@ -10,6 +10,11 @@ run: kill
 	# ./scripts/run.sh 1.9.10
 	
 	# ./scripts/run2.sh 1.7.13
+
+run2: kill
+
+	./scripts/run-without-anr.sh 1.9.3
+
 kill:
 	# ps awxww | grep avalanche | awk '{print $$1}' | xargs  kill -9 
 	ps awxww | grep avalanche | grep -v grep | awk '{print $$1}'|xargs  kill -9 
