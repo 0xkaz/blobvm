@@ -30,6 +30,7 @@ import (
 	avagoversion "github.com/ava-labs/avalanchego/version"
 	"github.com/ava-labs/blobvm/chain"
 	"github.com/ava-labs/blobvm/mempool"
+	"github.com/ava-labs/blobvm/mempool3"
 	"github.com/ava-labs/blobvm/version"
 )
 
@@ -58,8 +59,9 @@ type VM struct {
 
 	bootstrapped utils.AtomicBool
 
-	mempool  *mempool.Mempool
-	mempool2 [][QueueDataLen]byte
+	mempool *mempool.Mempool
+	// mempool2 [][QueueDataLen]byte
+	mempool3 *mempool3.Mempool3
 
 	appSender common.AppSender
 	network   *PushNetwork
@@ -160,6 +162,7 @@ func (vm *VM) Initialize(
 	log.Debug("loaded genesis", "genesis", string(genesisBytes), "target range units", vm.targetRangeUnits)
 
 	vm.mempool = mempool.New(vm.genesis, vm.config.MempoolSize)
+	vm.mempool3 = mempool3.New(vm.genesis, vm.config.Mempool3Size)
 
 	if has { //nolint:nestif
 		blkID, err := chain.GetLastAccepted(vm.db)
@@ -561,15 +564,78 @@ func (vm *VM) LastAccepted(ctx context.Context) (ids.ID, error) {
 	return vm.lastAccepted.ID(), nil
 }
 
-// addWeaveDBQueue ...
-func (vm *VM) addWeaveDBQueue(data [QueueDataLen]byte) bool {
-	log2.Printf("addWeaveDBQueue")
-	if len(vm.mempool2) > MaxMempoolSize {
-		return false
+// AddWeaveDBQueue
+func (vm *VM) AddWeaveDBQueue(
+// txs ...*chain.Transaction
+
+collectionPath string,
+contractTxId string,
+value string,
+
+) (errs []error) {
+	log2.Printf("AddWeaveDBQueue..")
+	blk, err := vm.GetStatelessBlock(vm.preferred)
+	log2.Printf("blk: %v", blk)
+	if err != nil {
+		return []error{err}
 	}
-	vm.mempool2 = append(vm.mempool2, data)
+	now := time.Now().Unix()
+	log2.Printf("now: %v", now)
+	ctx, err := vm.ExecutionContext(now, blk)
+	log2.Printf("ctx: %v", ctx)
+	if err != nil {
+		return []error{err}
+	}
+	vdb := versiondb.New(vm.db)
+	log2.Printf("vdb: %v",vdb)
+	if err := vm.addWeaveDBQueue(tx, vdb, now, ctx, collectionName, contractTxId, value); err != nil {
+	// for _, tx := range txs {
+	// 	if err := vm.addWeaveDBQueue(tx, vdb, now, ctx); err != nil {
+	// 		log.Debug("failed to submit transaction",
+	// 			"tx", tx.ID(),
+	// 			"error", err,
+	// 		)
+	// 		errs = append(errs, err)
+	// 		continue
+	// 	}
+	// 	vdb.Abort()
+	// }
+	return errs
+}
+
+// addWeaveDBQueue ...
+func (vm *VM) addWeaveDBQueue(
+	tx *chain.Transaction,
+db database.Database, 
+	blkTime int64,
+	ctx *chain.Context,
+	collectionPath string,
+	contractTxId string,
+	value string,
+) error {
+	if err := tx.Init(vm.genesis); err != nil {
+		return err
+	}
+	if err := tx.ExecuteBase(vm.genesis); err != nil {
+		return err
+	}
+	dummy := chain.DummyBlock(blkTime, tx)
+	if err := tx.Execute(vm.genesis, db, dummy, ctx); err != nil {
+		return err
+	}
+
+	vm.mempool3.Add(tx, collectionPath, contractTxId, value)
+
+	// log2.Printf("addWeaveDBQueue: data=%v", data)
+	// if len(vm.mempool2) > MaxMempoolSize {
+	// 	return false
+	// }
+	// log2.Printf("addWeaveDBQueue")
+	// vm.mempool2 = append(vm.mempool2, data)
+	// log2.Printf("addWeaveDBQueue")
+
 	vm.NotifyBlockReady()
-	return true
+	return nil
 }
 
 // NotifyBlockReady tells the consensus engine that a new block

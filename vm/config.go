@@ -13,6 +13,7 @@ type Config struct {
 	RegossipInterval time.Duration `serialize:"true" json:"regossipInterval"`
 
 	MempoolSize       int `serialize:"true" json:"mempoolSize"`
+	Mempool3Size      int `serialize:"true" json:"mempool3Size"`
 	ActivityCacheSize int `serialize:"true" json:"activityCacheSize"`
 }
 
@@ -23,4 +24,5 @@ func (c *Config) SetDefaults() {
 
 	c.MempoolSize = 1024
 	c.ActivityCacheSize = 128
+	c.Mempool3Size = 1024
 }

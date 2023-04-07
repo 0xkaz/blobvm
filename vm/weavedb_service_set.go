@@ -4,6 +4,7 @@
 package vm
 
 import (
+	"fmt"
 	log2 "log"
 	"net/http"
 
@@ -30,13 +31,22 @@ func (svc *WeaveDBService) Set(_ *http.Request, args *WeaveDBServiceSetArgs, rep
 
 	log.Info("WeaveDBService.Set")
 	bytes, err := formatting.Decode(formatting.Hex, args.Value)
-	if err != nil || len(bytes) != QueueDataLen {
-		// return errBadData
-		// return errors.New("WeaveDBService.Set: err=%v", err.Error())
-		return err
+	log2.Printf("WeaveDBService.Set: len(bytes)=%v", len(bytes))
 
+	if err != nil {
+		// return errBadData
+		return fmt.Errorf("WeaveDBService.Set: err=%v", err)
 	}
-	reply.Success = svc.vm.addWeaveDBQueue(BytesToData(bytes))
+	// if len(bytes) != QueueDataLen {
+	// 	return fmt.Errorf("WeaveDBService.Set: len(bytes) != QueueDataLen")
+	// }
+
+	svc.vm.AddWeaveDBQueue(
+	// args.CollectionPath,
+	// args.ContractTxId,
+	// args.Value,
+	)
+	// reply.Success = svc.vm.addWeaveDBQueue(BytesToData(bytes))
 
 	reply.Success = true
 	return nil
