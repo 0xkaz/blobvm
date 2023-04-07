@@ -84,7 +84,11 @@ func parseBaseTx(td *tdata.TypedData) (*BaseTx, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &BaseTx{BlockID: blockID, Magic: magic, Price: price}, nil
+	// TODO need to parse actual data. Currently use dummy data.
+	collectionPath := "dummy_collection_path"
+	query := "dummy_query"
+	contractTxId := "dummy_contract_tx_id"
+	return &BaseTx{BlockID: blockID, Magic: magic, Price: price, CollectionPath: collectionPath, ContractTxId: contractTxId, Query: query}, nil
 }
 
 func ParseTypedData(td *tdata.TypedData) (UnsignedTransaction, error) {
