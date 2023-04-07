@@ -144,6 +144,7 @@ func (b *TimeBuilder) HandleGenerateBlock() {
 // into a block.
 func (b *TimeBuilder) needToBuild() bool {
 	log2.Printf("TimeBuilder.needToBuild")
+	// return b.vm.mempool.Len() > 0 || b.vm.mempool3.Len() > 0
 	return b.vm.mempool.Len() > 0
 }
 
@@ -182,6 +183,8 @@ func (b *TimeBuilder) Build() {
 		select {
 		case <-b.vm.mempool.Pending:
 			b.signalTxsReady()
+		// case <-b.vm.mempool3.Pending:
+		// 	b.signalTxsReady()
 		case <-b.builderStop:
 			return
 		case <-b.stop:

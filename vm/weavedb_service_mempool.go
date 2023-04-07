@@ -24,7 +24,8 @@ type WeaveDBServiceMempoolReply struct {
 
 func (svc *WeaveDBService) Mempool(_ *http.Request, _ *struct{}, reply *WeaveDBServiceMempoolReply) (err error) {
 	log2.Printf("WeaveDBService.Mempool")
-	reply.Result = fmt.Sprintf("mempool3=%v", svc.vm.mempool3)
+	// reply.Result = fmt.Sprintf("mempool3=%v", svc.vm.mempool3)
+	reply.Result = fmt.Sprintf("mempool=%v", svc.vm.mempool)
 	reply.Success = true
 	return nil
 }

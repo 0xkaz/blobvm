@@ -24,6 +24,8 @@ type UnsignedTransaction interface {
 	GetBlockID() ids.ID
 	GetMagic() uint64
 	GetPrice() uint64
+	GetContractTxId() string
+	GetCollectionPath() string
 	SetBlockID(ids.ID)
 	SetMagic(uint64)
 	SetPrice(uint64)

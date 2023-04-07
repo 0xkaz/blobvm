@@ -7,8 +7,9 @@ import (
 	"container/heap"
 	"sync"
 
-	"github.com/ava-labs/avalanchego/ids"
+	log2 "log"
 
+	"github.com/ava-labs/avalanchego/ids"
 	"github.com/ava-labs/blobvm/chain"
 )
 
@@ -43,6 +44,10 @@ func New(g *chain.Genesis, maxSize int) *Mempool {
 func (th *Mempool) Add(tx *chain.Transaction) bool {
 	txID := tx.ID()
 	price := tx.GetPrice()
+	contractTxId := tx.GetContractTxId()
+	collectionPath := tx.GetCollectionPath()
+	log2.Printf("collectionPath: %v", collectionPath)
+	log2.Printf("contractTxId: %v", contractTxId)
 
 	th.mu.Lock()
 	defer th.mu.Unlock()
@@ -56,16 +61,21 @@ func (th *Mempool) Add(tx *chain.Transaction) bool {
 
 	// Optimistically add tx to mempool
 	heap.Push(th.maxHeap, &txEntry{
-		id:    txID,
-		price: price,
+		id:             txID,
+		price:          price,
+		collectionPath: collectionPath,
+		contractTxId:   contractTxId,
+
 		tx:    tx,
 		index: oldLen,
 	})
 	heap.Push(th.minHeap, &txEntry{
-		id:    txID,
-		price: price,
-		tx:    tx,
-		index: oldLen,
+		id:             txID,
+		price:          price,
+		collectionPath: collectionPath,
+		contractTxId:   contractTxId,
+		tx:             tx,
+		index:          oldLen,
 	})
 
 	// Remove the lowest paying tx

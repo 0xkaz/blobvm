@@ -41,11 +41,11 @@ func (svc *WeaveDBService) Set(_ *http.Request, args *WeaveDBServiceSetArgs, rep
 	// 	return fmt.Errorf("WeaveDBService.Set: len(bytes) != QueueDataLen")
 	// }
 
-	svc.vm.AddWeaveDBQueue(
+	// svc.vm.AddWeaveDBQueue(
 	// args.CollectionPath,
 	// args.ContractTxId,
 	// args.Value,
-	)
+	// )
 	// reply.Success = svc.vm.addWeaveDBQueue(BytesToData(bytes))
 
 	reply.Success = true

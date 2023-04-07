@@ -18,6 +18,9 @@ type txEntry struct {
 	tx    *chain.Transaction
 	price uint64
 	index int
+
+	contractTxId   string
+	collectionPath string
 }
 
 // txHeap is used to track pending transactions by [price]
@@ -25,6 +28,9 @@ type txHeap struct {
 	isMinHeap bool
 	items     []*txEntry
 	lookup    map[ids.ID]*txEntry
+
+	contractTxId   string
+	collectionPath string
 }
 
 func newTxHeap(items int, isMinHeap bool) *txHeap {

@@ -17,6 +17,11 @@ type BaseTx struct {
 
 	// Price is the value per unit to spend on this transaction.
 	Price uint64 `serialize:"true" json:"price"`
+	//
+
+	ContractTxId string `serialize:"true" json:"contract_tx_id"`
+	//
+	CollectionPath string `serialize:"true" json:"collection_path"`
 }
 
 func (b *BaseTx) GetBlockID() ids.ID {
@@ -37,6 +42,12 @@ func (b *BaseTx) SetMagic(magic uint64) {
 
 func (b *BaseTx) GetPrice() uint64 {
 	return b.Price
+}
+func (b *BaseTx) GetContractTxId() string {
+	return b.ContractTxId
+}
+func (b *BaseTx) GetCollectionPath() string {
+	return b.ContractTxId
 }
 
 func (b *BaseTx) SetPrice(price uint64) {
