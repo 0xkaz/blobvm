@@ -646,14 +646,14 @@ func (vm *VM) LastAccepted(ctx context.Context) (ids.ID, error) {
 // 	return nil
 // }
 
-// NotifyBlockReady tells the consensus engine that a new block
-// is ready to be created
-func (vm *VM) NotifyBlockReady() {
-	log2.Printf("NotifyBlockReady")
+// // NotifyBlockReady tells the consensus engine that a new block
+// // is ready to be created
+// func (vm *VM) NotifyBlockReady() {
+// 	log2.Printf("NotifyBlockReady")
 
-	select {
-	case vm.toEngine <- common.PendingTxs:
-	default:
-		vm.snowCtx.Log.Debug("dropping message to consensus engine")
-	}
-}
+// 	select {
+// 	case vm.toEngine <- common.PendingTxs:
+// 	default:
+// 		vm.snowCtx.Log.Debug("dropping message to consensus engine")
+// 	}
+// }
