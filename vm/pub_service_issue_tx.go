@@ -8,7 +8,6 @@ import (
 	"net/http"
 
 	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 
 	"github.com/ava-labs/blobvm/chain"
