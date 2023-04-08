@@ -49,8 +49,8 @@ func (i *Input) Decode() (UnsignedTransaction, error) {
 		}, nil
 	case Write:
 		return &WriteTx{
-			BaseTx:         &BaseTx{},
-			To:             i.To,
+			BaseTx: &BaseTx{},
+			// To:             i.To,
 			Units:          i.Units,
 			Query:          i.Query,
 			CollectionPath: i.CollectionPath,
