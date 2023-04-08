@@ -22,7 +22,7 @@ ps:
 	ps awxww | grep avalanche 
 
 docker: 
-	docker build   -t $(_NAME) . 
+	docker build  --platform linux/amd64  -t $(_NAME) . 
 
 dockerrun: 
 	docker run -p 12352:12352 -t $(_NAME)  
