@@ -12,10 +12,12 @@ import (
 )
 
 func (vm *VM) Genesis() *chain.Genesis {
+	//
 	return vm.genesis
 }
 
 func (vm *VM) IsBootstrapped() bool {
+	//
 	return vm.bootstrapped.GetValue()
 }
 

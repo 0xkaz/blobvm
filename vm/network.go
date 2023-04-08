@@ -5,6 +5,7 @@ package vm
 
 import (
 	"context"
+	log2 "log"
 
 	"github.com/ava-labs/avalanchego/cache"
 	"github.com/ava-labs/avalanchego/ids"
@@ -23,6 +24,7 @@ type PushNetwork struct {
 }
 
 func (vm *VM) NewPushNetwork() *PushNetwork {
+	log2.Printf("VM.NewPushNetwork")
 	return &PushNetwork{
 		vm:          vm,
 		gossipedTxs: &cache.LRU{Size: gossipedTxsLRUSize},
@@ -30,6 +32,7 @@ func (vm *VM) NewPushNetwork() *PushNetwork {
 }
 
 func (n *PushNetwork) sendTxs(txs []*chain.Transaction) error {
+	log2.Printf("PushNetwork.sendTxs")
 	if len(txs) == 0 {
 		return nil
 	}
@@ -56,6 +59,7 @@ func (n *PushNetwork) sendTxs(txs []*chain.Transaction) error {
 }
 
 func (n *PushNetwork) GossipNewTxs(newTxs []*chain.Transaction) error {
+	log2.Printf("PushNetwork.GossipNewTxs")
 	if n.vm.appSender == nil {
 		return nil
 	}
@@ -79,6 +83,8 @@ func (n *PushNetwork) GossipNewTxs(newTxs []*chain.Transaction) error {
 // Triggers "AppGossip" on the pending transactions in the mempool.
 // "force" is true to re-gossip whether recently gossiped or not
 func (n *PushNetwork) RegossipTxs() error {
+	log2.Printf("PushNetwork.RegossipTxs")
+
 	if n.vm.appSender == nil {
 		return nil
 	}
@@ -108,6 +114,7 @@ func (n *PushNetwork) RegossipTxs() error {
 // ref. "avalanchego/vms/platformvm/network.AppGossip"
 // ref. "coreeth/plugin/evm.GossipHandler.HandleEthTxs"
 func (vm *VM) AppGossip(ctx context.Context, nodeID ids.NodeID, msg []byte) error {
+	log2.Printf("PushNetwork.AppGossip")
 	log.Debug("AppGossip message handler",
 		"sender", nodeID,
 		"receiver", vm.snowCtx.NodeID,
@@ -144,5 +151,7 @@ func (vm *VM) AppGossip(ctx context.Context, nodeID ids.NodeID, msg []byte) erro
 
 // used for testing VM
 func (vm *VM) Network() *PushNetwork {
+	log2.Printf("VM.Network")
+
 	return vm.network
 }
