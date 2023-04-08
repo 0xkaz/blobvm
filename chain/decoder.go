@@ -17,6 +17,7 @@ import (
 const (
 	Set      = "set"
 	Transfer = "transfer"
+	Write    = "write"
 )
 
 type Input struct {
@@ -25,6 +26,12 @@ type Input struct {
 	Value []byte         `json:"value"`
 	To    common.Address `json:"to"`
 	Units uint64         `json:"units"`
+	//
+	ContractTxId string `json:"contract_tx_id"`
+	//
+	CollectionPath string `json:"collection_path"`
+	//
+	Query string `json:"query"`
 }
 
 func (i *Input) Decode() (UnsignedTransaction, error) {
@@ -40,6 +47,15 @@ func (i *Input) Decode() (UnsignedTransaction, error) {
 			To:     i.To,
 			Units:  i.Units,
 		}, nil
+	case Write:
+		return &WriteTx{
+			BaseTx:         &BaseTx{},
+			To:             i.To,
+			Units:          i.Units,
+			Query:          i.Query,
+			CollectionPath: i.CollectionPath,
+			ContractTxId:   i.ContractTxId,
+		}, nil
 	default:
 		return nil, ErrInvalidType
 	}
@@ -53,6 +69,12 @@ const (
 
 	tdBlockID = "blockID"
 	tdPrice   = "price"
+
+	//
+	tdContractTxId   = "contract_tx_td"
+	tdCollectionPath = "collection_path"
+	// tdContractTxId   = "contractTxId"
+	// tdCollectionPath   = "collectionPath"
 
 	tdValue = "value"
 	tdUnits = "units"
@@ -84,11 +106,15 @@ func parseBaseTx(td *tdata.TypedData) (*BaseTx, error) {
 	if err != nil {
 		return nil, err
 	}
-	// TODO need to parse actual data. Currently use dummy data.
-	collectionPath := "dummy_collection_path"
-	query := "dummy_query"
-	contractTxId := "dummy_contract_tx_id"
-	return &BaseTx{BlockID: blockID, Magic: magic, Price: price, CollectionPath: collectionPath, ContractTxId: contractTxId, Query: query}, nil
+	// // TODO need to parse actual data. Currently use dummy data.
+	// collectionPath := "dummy_collection_path"
+	// query := "dummy_query"
+	// contractTxId := "dummy_contract_tx_id"
+	// return &BaseTx{BlockID: blockID, Magic: magic, Price: price,
+	// 	CollectionPath: collectionPath, ContractTxId: contractTxId, Query: query
+	// 	}, nil
+	return &BaseTx{BlockID: blockID, Magic: magic, Price: price}, // CollectionPath: collectionPath, ContractTxId: contractTxId, Query: query
+		nil
 }
 
 func ParseTypedData(td *tdata.TypedData) (UnsignedTransaction, error) {

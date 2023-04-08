@@ -17,12 +17,12 @@ type BaseTx struct {
 
 	// Price is the value per unit to spend on this transaction.
 	Price uint64 `serialize:"true" json:"price"`
-	//
-	ContractTxId string `serialize:"true" json:"contract_tx_id"`
-	//
-	CollectionPath string `serialize:"true" json:"collection_path"`
-	//
-	Query string `serialize:"true" json:"query"`
+	// //
+	// ContractTxId string `serialize:"true" json:"contract_tx_id"`
+	// //
+	// CollectionPath string `serialize:"true" json:"collection_path"`
+	// //
+	// Query string `serialize:"true" json:"query"`
 }
 
 func (b *BaseTx) GetBlockID() ids.ID {
@@ -44,26 +44,27 @@ func (b *BaseTx) SetMagic(magic uint64) {
 func (b *BaseTx) GetPrice() uint64 {
 	return b.Price
 }
-func (b *BaseTx) GetContractTxId() string {
-	return b.ContractTxId
-}
-func (b *BaseTx) GetCollectionPath() string {
-	return b.ContractTxId
-}
-func (b *BaseTx) SetContractTxId(txid string) {
-	b.ContractTxId = txid
-}
 
-func (b *BaseTx) SetCollectionPath(colPath string) {
-	b.CollectionPath = colPath
-}
+// func (b *BaseTx) GetContractTxId() string {
+// 	return b.ContractTxId
+// }
+// func (b *BaseTx) GetCollectionPath() string {
+// 	return b.ContractTxId
+// }
+// func (b *BaseTx) SetContractTxId(txid string) {
+// 	b.ContractTxId = txid
+// }
 
-func (b *BaseTx) SetQuery(q string) {
-	b.Query = q
-}
-func (b *BaseTx) GetQuery() string {
-	return b.Query
-}
+// func (b *BaseTx) SetCollectionPath(colPath string) {
+// 	b.CollectionPath = colPath
+// }
+
+// func (b *BaseTx) SetQuery(q string) {
+// 	b.Query = q
+// }
+// func (b *BaseTx) GetQuery() string {
+// 	return b.Query
+// }
 
 func (b *BaseTx) SetPrice(price uint64) {
 	b.Price = price
@@ -94,11 +95,11 @@ func (b *BaseTx) Copy() *BaseTx {
 	blockID := ids.ID{}
 	copy(blockID[:], b.BlockID[:])
 	return &BaseTx{
-		BlockID:        blockID,
-		Magic:          b.Magic,
-		Price:          b.Price,
-		Query:          b.Query,
-		CollectionPath: b.CollectionPath,
-		ContractTxId:   b.ContractTxId,
+		BlockID: blockID,
+		Magic:   b.Magic,
+		Price:   b.Price,
+		// Query:          b.Query,
+		// CollectionPath: b.CollectionPath,
+		// ContractTxId:   b.ContractTxId,
 	}
 }

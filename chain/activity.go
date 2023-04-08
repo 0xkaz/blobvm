@@ -13,4 +13,10 @@ type Activity struct {
 	Key    string `serialize:"true" json:"key,omitempty"`
 	To     string `serialize:"true" json:"to,omitempty"` // common.Address will be 0x000 when not populated
 	Units  uint64 `serialize:"true" json:"units,omitempty"`
+	//
+	ContractTxId string `serialize:"true" json:"contract_tx_id"`
+	//
+	CollectionPath string `serialize:"true" json:"collection_path"`
+	//
+	Query string `serialize:"true" json:"query"`
 }
