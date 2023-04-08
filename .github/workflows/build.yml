@@ -23,6 +23,9 @@ jobs:
       - name: build
         run: make 
 
+      - name: run/test
+        run: E2E=true MODE=test ./scripts/run.sh
+
       - name: docker build
         # run: make docker
         run: docker bulid -t blobvm .

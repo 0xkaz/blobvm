@@ -4,11 +4,10 @@
 package chain
 
 import (
-	"bytes"
+	log2 "log"
 	"strconv"
 
 	"github.com/ava-labs/blobvm/tdata"
-	"github.com/ethereum/go-ethereum/common"
 )
 
 var _ UnsignedTransaction = &WriteTx{}
@@ -16,8 +15,8 @@ var _ UnsignedTransaction = &WriteTx{}
 type WriteTx struct {
 	*BaseTx `serialize:"true" json:"baseTx"`
 
-	// To is the recipient of the [Units].
-	To common.Address `serialize:"true" json:"to"`
+	// // To is the recipient of the [Units].
+	// To common.Address `serialize:"true" json:"to"`
 
 	// Units are transferred to [To].
 	Units uint64 `serialize:"true" json:"units"`
@@ -31,34 +30,43 @@ type WriteTx struct {
 }
 
 func (t *WriteTx) Execute(c *TransactionContext) error {
-	// Must transfer to someone
-	if bytes.Equal(t.To[:], zeroAddress[:]) {
-		return ErrNonActionable
-	}
 
-	// This prevents someone from transferring to themselves.
-	if bytes.Equal(t.To[:], c.Sender[:]) {
-		return ErrNonActionable
-	}
-	if t.Units == 0 {
-		return ErrNonActionable
-	}
-	if _, err := ModifyBalance(c.Database, c.Sender, false, t.Units); err != nil {
-		return err
-	}
-	if _, err := ModifyBalance(c.Database, t.To, true, t.Units); err != nil {
-		return err
-	}
+	log2.Printf("WriteTx.Execute:")
+	log2.Printf("c.ContractTxId: %v", t.ContractTxId)
+	log2.Printf("c.CollectionPath: %v", t.CollectionPath)
+	log2.Printf("c.Query: %v", t.Query)
+	WriteTestQuery(c.Database, t.ContractTxId, t.CollectionPath, t.Query)
+	// // Must transfer to someone
+	// if bytes.Equal(t.To[:], zeroAddress[:]) {
+	// 	return ErrNonActionable
+	// }
+
+	// // This prevents someone from transferring to themselves.
+	// if bytes.Equal(t.To[:], c.Sender[:]) {
+	// 	return ErrNonActionable
+	// }
+	// if t.Units == 0 {
+	// 	return ErrNonActionable
+	// }
+	// if _, err := ModifyBalance(c.Database, c.Sender, false, t.Units); err != nil {
+	// 	return err
+	// }
+	// if _, err := ModifyBalance(c.Database, t.To, true, t.Units); err != nil {
+	// 	return err
+	// }
 	return nil
 }
 
 func (t *WriteTx) Copy() UnsignedTransaction {
-	to := make([]byte, common.AddressLength)
-	copy(to, t.To[:])
+	// to := make([]byte, common.AddressLength)
+	// copy(to, t.To[:])
 	return &WriteTx{
 		BaseTx: t.BaseTx.Copy(),
-		To:     common.BytesToAddress(to),
-		Units:  t.Units,
+		// To:     common.BytesToAddress(to),
+		Query:          t.Query,
+		ContractTxId:   t.ContractTxId,
+		CollectionPath: t.CollectionPath,
+		Units:          t.Units,
 	}
 }
 
@@ -66,7 +74,7 @@ func (t *WriteTx) TypedData() *tdata.TypedData {
 	return tdata.CreateTypedData(
 		t.Magic, Transfer,
 		[]tdata.Type{
-			{Name: tdTo, Type: tdAddress},
+			// {Name: tdTo, Type: tdAddress},
 			{Name: tdUnits, Type: tdUint64},
 			{Name: tdPrice, Type: tdUint64},
 			{Name: tdContractTxId, Type: tdString},
@@ -74,7 +82,7 @@ func (t *WriteTx) TypedData() *tdata.TypedData {
 			{Name: tdBlockID, Type: tdString},
 		},
 		tdata.TypedDataMessage{
-			tdTo:             t.To.Hex(),
+			// tdTo:             t.To.Hex(),
 			tdUnits:          strconv.FormatUint(t.Units, 10),
 			tdPrice:          strconv.FormatUint(t.Price, 10),
 			tdContractTxId:   t.ContractTxId,
@@ -86,8 +94,8 @@ func (t *WriteTx) TypedData() *tdata.TypedData {
 
 func (t *WriteTx) Activity() *Activity {
 	return &Activity{
-		Typ:   Transfer,
-		To:    t.To.Hex(),
+		Typ: Transfer,
+		// To:    t.To.Hex(),
 		Units: t.Units,
 		//
 		Query:          t.Query,
