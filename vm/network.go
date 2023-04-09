@@ -32,7 +32,7 @@ func (vm *VM) NewPushNetwork() *PushNetwork {
 }
 
 func (n *PushNetwork) sendTxs(txs []*chain.Transaction) error {
-	log2.Printf("PushNetwork.sendTxs")
+	// log2.Printf("PushNetwork.sendTxs")
 	if len(txs) == 0 {
 		return nil
 	}
@@ -59,7 +59,7 @@ func (n *PushNetwork) sendTxs(txs []*chain.Transaction) error {
 }
 
 func (n *PushNetwork) GossipNewTxs(newTxs []*chain.Transaction) error {
-	log2.Printf("PushNetwork.GossipNewTxs")
+	// log2.Printf("PushNetwork.GossipNewTxs")
 	if n.vm.appSender == nil {
 		return nil
 	}
